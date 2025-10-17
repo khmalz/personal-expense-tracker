@@ -4,7 +4,7 @@ A full-stack personal expense tracking application. Built with a Laravel 12 API 
 
 ## 1\. Backend Setup (Laravel)
 
-Ikuti langkah-langkah ini untuk menjalankan server API backend. Pastikan Anda sudah terinstall PHP 8.2+.
+Ikuti langkah-langkah ini untuk menjalankan server API backend. Pastikan sudah terinstall PHP 8.2+.
 
 **Clone**
 
