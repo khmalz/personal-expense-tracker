@@ -57,7 +57,7 @@ php artisan migrate --seed
 
 **Run Local Server**
 
-Server backend Anda akan berjalan di `http://localhost:8000`.
+Server backend akan berjalan di `http://localhost:8000`.
 
 ```shell
 php artisan serve
@@ -90,7 +90,7 @@ cp .env.example .env
 
 **Setting Backend URL in .env.local**
 
-Edit file `.env` dan arahkan ke URL backend Laravel Anda.
+Edit file `.env` dan arahkan ke URL backend Laravel.
 
 ```
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
@@ -98,7 +98,7 @@ NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
 
 **Run Local Server**
 
-Server development Next.js Anda akan berjalan di `http://localhost:3000`.
+Server development Next.js akan berjalan di `http://localhost:3000`.
 
 ```shell
 npm run dev
@@ -109,7 +109,7 @@ pnpm dev
 
 ## 3\. Demo Credentials
 
-Setelah kedua server (backend dan frontend) berjalan, buka `http://localhost:3000` di browser Anda.
+Setelah kedua server (backend dan frontend) berjalan, buka `http://localhost:3000` di browser.
 
 ## Developer
 
