@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import useExpense from '@/hooks/expense'
 import { CATEGORIES } from '@/lib/data/categories'
+import type { Expense, ExpenseStore, FilterCategory } from '@/types'
 
 export default function HomePage() {
     const {
@@ -13,9 +14,9 @@ export default function HomePage() {
         fetchExpenses,
         filterExpenses,
         deleteExpense,
-    } = useExpense()
+    } = useExpense() as ExpenseStore
 
-    const [filter, setFilter] = useState('All')
+    const [filter, setFilter] = useState<FilterCategory>('All')
     const router = useRouter()
 
     useEffect(() => {
@@ -26,7 +27,7 @@ export default function HomePage() {
         filterExpenses(filter)
     }, [filter, filterExpenses])
 
-    const handleDelete = async id => {
+    const handleDelete = async (id: number) => {
         if (confirm('Are you sure you want to delete this expense?')) {
             const success = await deleteExpense(id)
             if (success) {
@@ -38,7 +39,7 @@ export default function HomePage() {
     }
 
     const totalAmount = expenses.reduce(
-        (sum, expense) => sum + parseFloat(expense.amount),
+        (sum: number, expense: Expense) => sum + expense.amount,
         0,
     )
 
@@ -61,7 +62,9 @@ export default function HomePage() {
                 <select
                     id="category-filter"
                     value={filter}
-                    onChange={e => setFilter(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                        setFilter(e.target.value as FilterCategory)
+                    }
                     className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     <option value="All">All</option>
                     {CATEGORIES.map(cat => (
@@ -80,7 +83,7 @@ export default function HomePage() {
 
             <ul className="list-none p-0 space-y-4">
                 {expenses.length > 0 ? (
-                    expenses.map(expense => (
+                    expenses.map((expense: Expense) => (
                         <li
                             key={expense.id}
                             className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
@@ -96,7 +99,8 @@ export default function HomePage() {
                                 </div>
                                 <div className="text-right">
                                     <span className="text-lg font-bold text-gray-800">
-                                        ${parseFloat(expense.amount).toFixed(2)}
+                                        {/* .amount adalah number, jadi toFixed bisa langsung dipakai */}
+                                        ${expense.amount.toFixed(2)}
                                     </span>
                                     <br />
                                     <small className="text-gray-500 text-sm">

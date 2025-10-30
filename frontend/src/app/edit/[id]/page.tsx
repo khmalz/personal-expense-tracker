@@ -4,24 +4,30 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import ExpenseForm from '@/components/ExpenseForm'
 import axios from '@/lib/axios'
+import type { AxiosError } from 'axios'
+import type { Expense, ExpenseFormData, ValidationResponseData } from '@/types'
 
 export default function EditExpensePage() {
     const router = useRouter()
     const params = useParams()
-    const { id } = params
+    const id = params.id as string
 
-    const [expenseToEdit, setExpenseToEdit] = useState(null)
-    const [isLoading, setIsLoading] = useState(true)
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null)
+    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
     useEffect(() => {
         if (!id) return
 
         const fetchExpense = async () => {
             try {
-                const response = await axios.get(`/api/expenses/${id}`)
+                const response = await axios.get<{ data: Expense }>(
+                    `/api/expenses/${id}`,
+                )
+
                 setExpenseToEdit(response.data.data)
-            } catch (error) {
+            } catch (err) {
+                const error = err as AxiosError
                 console.error('Failed to fetch expense:', error)
                 if (error.response?.status === 404) {
                     alert('Expense not found!')
@@ -35,7 +41,7 @@ export default function EditExpensePage() {
         fetchExpense()
     }, [id, router])
 
-    const handleEditExpense = async data => {
+    const handleEditExpense = async (data: ExpenseFormData) => {
         if (isSubmitting) return
         setIsSubmitting(true)
 
@@ -44,9 +50,10 @@ export default function EditExpensePage() {
 
             alert('Expense updated successfully!')
             router.push('/')
-        } catch (error) {
+        } catch (err) {
+            const error = err as AxiosError<ValidationResponseData>
             console.error('Failed to update expense:', error)
-            if (error.response?.status === 422) {
+            if (error.response?.status === 422 && error.response.data.errors) {
                 const validationErrors = error.response.data.errors
                 const errorMessages = Object.values(validationErrors)
                     .flat()

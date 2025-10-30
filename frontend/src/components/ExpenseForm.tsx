@@ -1,35 +1,48 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
+import {
+    CATEGORIES,
+    type Category,
+    type Expense,
+    type ExpenseFormData,
+} from '@/types'
 
-const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Other']
+interface ExpenseFormProps {
+    onSubmit: (data: ExpenseFormData) => void
+    initialData?: Expense | null
+    isSubmitting?: boolean
+}
 
 export default function ExpenseForm({
     onSubmit,
-    initialData = {},
+    initialData,
     isSubmitting = false,
-}) {
-    const [description, setDescription] = useState('')
-    const [amount, setAmount] = useState('')
-    const [category, setCategory] = useState(CATEGORIES[0])
+}: ExpenseFormProps) {
+    const [description, setDescription] = useState<string>('')
+    const [amount, setAmount] = useState<string>('')
+    const [category, setCategory] = useState<Category>(CATEGORIES[0])
 
     useEffect(() => {
-        if (initialData.description) {
+        if (initialData) {
             setDescription(initialData.description)
             setAmount(initialData.amount.toString())
             setCategory(initialData.category)
         }
     }, [initialData])
 
-    const handleSubmit = e => {
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        if (!description || !amount || parseFloat(amount) <= 0) {
+        const parsedAmount = parseFloat(amount)
+
+        if (!description || !parsedAmount || parsedAmount <= 0) {
             alert('Please fill in all fields with valid values.')
             return
         }
         onSubmit({
             description,
-            amount: parseFloat(amount),
+            amount: parsedAmount,
             category,
         })
     }
@@ -50,7 +63,9 @@ export default function ExpenseForm({
                     id="description"
                     type="text"
                     value={description}
-                    onChange={e => setDescription(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        setDescription(e.target.value)
+                    }
                     required
                     className={inputClass}
                 />
@@ -64,7 +79,9 @@ export default function ExpenseForm({
                     id="amount"
                     type="number"
                     value={amount}
-                    onChange={e => setAmount(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        setAmount(e.target.value)
+                    }
                     min="0.01"
                     step="0.01"
                     required
@@ -79,7 +96,9 @@ export default function ExpenseForm({
                 <select
                     id="category"
                     value={category}
-                    onChange={e => setCategory(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                        setCategory(e.target.value as Category)
+                    }
                     required
                     className={inputClass}>
                     {CATEGORIES.map(cat => (
@@ -96,7 +115,7 @@ export default function ExpenseForm({
                 className="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-blue-400">
                 {isSubmitting
                     ? 'Submitting...'
-                    : initialData.id
+                    : initialData?.id
                       ? 'Update Expense'
                       : 'Add Expense'}
             </button>

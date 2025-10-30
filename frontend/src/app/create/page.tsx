@@ -4,12 +4,14 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ExpenseForm from '@/components/ExpenseForm'
 import axios from '@/lib/axios'
+import type { AxiosError } from 'axios'
+import type { ExpenseFormData, ValidationResponseData } from '@/types'
 
 export default function CreateExpensePage() {
     const router = useRouter()
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
-    const handleAddExpense = async data => {
+    const handleAddExpense = async (data: ExpenseFormData) => {
         if (isSubmitting) return
         setIsSubmitting(true)
 
@@ -18,10 +20,11 @@ export default function CreateExpensePage() {
 
             alert('Expense added successfully!')
             router.push('/')
-        } catch (error) {
+        } catch (err) {
+            const error = err as AxiosError<ValidationResponseData>
             console.error('Failed to add expense:', error)
 
-            if (error.response?.status === 422) {
+            if (error.response?.status === 422 && error.response.data.errors) {
                 const validationErrors = error.response.data.errors
                 const errorMessages = Object.values(validationErrors)
                     .flat()

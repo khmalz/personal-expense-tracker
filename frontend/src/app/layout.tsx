@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import './global.css'
+import type { Metadata } from 'next'
 
-export const metadata = {
+export const metadata: Metadata = {
     title: 'Expense Tracker',
     description: 'A simple personal expense tracker',
 }
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: {children: React.ReactNode}) {
     return (
         <html lang="en">
             <body className="bg-gray-50 min-h-screen">
