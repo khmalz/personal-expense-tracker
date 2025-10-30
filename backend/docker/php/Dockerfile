@@ -12,7 +12,7 @@ RUN apk add --no-cache \
     libxml2-dev \
     libpq-dev \
     oniguruma-dev \
-    libicu-dev \
+    icu-dev \
     curl \
     unzip \
     openssl \
