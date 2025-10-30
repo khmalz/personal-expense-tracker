@@ -1,0 +1,17 @@
+/bootstrap/cache/*
+/storage/*
+/public/storage
+/public/hot
+
+.env
+.DS_Store
+*.log
+
+/vendor
+/node_modules
+
+.git
+.gitignore
+
+.dockerignore
+docker-compose.yml
