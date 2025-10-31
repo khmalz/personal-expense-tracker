@@ -17,7 +17,7 @@ setup: composer-install key-generate migrate-fresh
 
 migrate-fresh:
 	@echo "--- Menjalankan migrate:fresh --seed... ---"
-	docker compose exec php php artisan migrate:fresh --seed
+	docker compose exec --user www-data php php artisan migrate:fresh --seed
 
 composer-install:
 	@echo "--- Menjalankan composer install... ---"
@@ -25,13 +25,13 @@ composer-install:
 
 key-generate:
 	@echo "--- Menjalankan artisan key:generate... ---"
-	docker compose exec php php artisan key:generate
+	docker compose exec --user www-data php php artisan key:generate
 
 artisan:
-	docker compose exec php php artisan $(filter-out $@,$(MAKECMDGOALS))
+	docker compose exec --user www-data php php artisan $(filter-out $@,$(MAKECMDGOALS))
 
 composer:
 	docker compose exec php composer $(filter-out $@,$(MAKECMDGOALS))
 
 shell:
-	docker compose exec php /bin/sh
+	docker compose exec --user www-data php /bin/sh
