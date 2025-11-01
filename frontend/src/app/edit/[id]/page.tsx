@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
 import ExpenseForm from '@/components/ExpenseForm'
+import { revalidateExpenseCache } from '@/hooks/action'
 import axios from '@/lib/axios'
-import type { AxiosError } from 'axios'
 import type { Expense, ExpenseFormData, ValidationResponseData } from '@/types'
+import type { AxiosError } from 'axios'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function EditExpensePage() {
     const router = useRouter()
@@ -47,6 +48,8 @@ export default function EditExpensePage() {
 
         try {
             await axios.put(`/api/expenses/${id}`, data)
+
+            await revalidateExpenseCache()
 
             alert('Expense updated successfully!')
             router.push('/')

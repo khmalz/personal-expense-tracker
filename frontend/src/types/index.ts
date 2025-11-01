@@ -22,9 +22,13 @@ export interface ExpenseStore {
     expensesRaw: Expense[]
     expenses: Expense[]
     isLoading: boolean
-    fetchExpenses: () => Promise<void>
+    error: string | null
     filterExpenses: (filter: FilterCategory) => void
-    deleteExpense: (id: number) => Promise<boolean>
+    deleteExpense: (id: number) => void
+    setExpensesRaw: (data: Expense[]) => void
+    setExpenses: (data: Expense[]) => void
+    setError: (error: string | null) => void
+    setIsLoading: (status: boolean) => void
 }
 
 export interface ValidationErrors {

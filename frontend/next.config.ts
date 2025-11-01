@@ -1,7 +1,8 @@
-import { NextConfig } from "next";
+import { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-   trailingSlash: true,
-};
+    trailingSlash: true,
+    cacheComponents: true,
+}
 
 export default nextConfig
