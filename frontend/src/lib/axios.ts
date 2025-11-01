@@ -1,7 +1,15 @@
 import Axios, { type AxiosInstance } from 'axios'
 
+const getBaseURL = () => {
+    if (typeof window === 'undefined') {
+        return process.env.SERVER_BACKEND_URL
+    }
+
+    return process.env.NEXT_PUBLIC_BACKEND_URL
+}
+
 const axios: AxiosInstance = Axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+    baseURL: getBaseURL(),
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
     },
