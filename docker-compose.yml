@@ -1,0 +1,89 @@
+services:
+   frontend:
+      build:
+         context: ./frontend
+         dockerfile: ./frontend/Dockerfile
+      container_name: laravel_frontend
+      ports:
+         - "3000:3000"
+      volumes:
+         - ./frontend:/app
+         - /app/node_modules
+         - /app/.next
+      networks:
+         - laravel-network
+      depends_on:
+         - nginx
+
+   nginx:
+      build:
+         context: ./backend
+         dockerfile: ./backend/docker/nginx/Dockerfile
+      container_name: laravel_nginx
+      ports:
+         - "80:80"
+      volumes:
+         - ./backend:/var/www/app
+      depends_on:
+         - php
+      networks:
+         - laravel-network
+
+   php:
+      build:
+         context: ./backend
+         dockerfile: ./backend/docker/php/Dockerfile
+      container_name: laravel_php
+      volumes:
+         - ./backend:/var/www/app
+      networks:
+         - laravel-network
+
+   redis:
+      image: redis:alpine
+      container_name: laravel_redis
+      restart: unless-stopped
+      ports:
+         - "6379:6379"
+      volumes:
+         - redis_data:/data
+      networks:
+         - laravel-network
+      healthcheck:
+         test: ["CMD", "redis-cli", "ping"]
+         interval: 10s
+         timeout: 5s
+         retries: 3
+      command: redis-server --appendonly yes
+
+   # postgres:
+   #   image: postgres:16
+   #   container_name: laravel_postgres
+   #   restart: unless-stopped
+   #   user: postgres
+   #   ports:
+   #     - 5432:5432
+   #   environment:
+   #     # Variabel ini akan diambil dari file .env di ROOT project-mu
+   #     POSTGRES_DB: ${POSTGRES_DATABASE}
+   #     POSTGRES_USER: ${POSTGRES_USERNAME}
+   #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+   #   volumes:
+   #     - postgres_data:/var/lib/postgresql/data
+   #   networks:
+   #     - laravel-network
+   #   healthcheck:
+   #     test: ["CMD", "pg_isready"]
+   #     interval: 10s
+   #     timeout: 5s
+   #     retries: 5
+
+networks:
+   laravel-network:
+      driver: bridge
+
+volumes:
+   redis_data:
+      driver: local
+   # postgres_data:
+   #   driver: local
