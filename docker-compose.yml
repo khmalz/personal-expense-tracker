@@ -2,7 +2,7 @@ services:
    frontend:
       build:
          context: ./frontend
-         dockerfile: ./frontend/Dockerfile
+         dockerfile: Dockerfile
       container_name: laravel_frontend
       ports:
          - "3000:3000"
@@ -18,7 +18,7 @@ services:
    nginx:
       build:
          context: ./backend
-         dockerfile: ./backend/docker/nginx/Dockerfile
+         dockerfile: docker/nginx/Dockerfile
       container_name: laravel_nginx
       ports:
          - "80:80"
@@ -32,7 +32,7 @@ services:
    php:
       build:
          context: ./backend
-         dockerfile: ./backend/docker/php/Dockerfile
+         dockerfile: docker/php/Dockerfile
       container_name: laravel_php
       volumes:
          - ./backend:/var/www/app
