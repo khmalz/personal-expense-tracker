@@ -1,7 +1,7 @@
 import Axios, { type AxiosInstance } from 'axios'
 
 const getBaseURL = () => {
-    if (typeof window === 'undefined') {
+    if (typeof window === 'undefined' && process.env.IS_DOCKER === 'true') {
         return process.env.SERVER_BACKEND_URL
     }
 
