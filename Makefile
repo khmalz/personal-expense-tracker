@@ -1,4 +1,4 @@
-.PHONY: up down stop setup migrate-fresh artisan composer shell
+.PHONY: up down stop setup migrate-fresh artisan composer shell redis
 
 up:
 	@echo "--- Memulai semua kontainer Docker (di background)... ---"
@@ -35,3 +35,10 @@ composer:
 
 shell:
 	docker compose exec --user www-data php /bin/sh
+
+redis:
+	@echo "--- Masuk ke Redis CLI... ---"
+	docker compose exec redis redis-cli
+
+%::
+	@:

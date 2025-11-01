@@ -8,7 +8,7 @@ chown -R www-data:www-data \
     /var/www/app/database
 
 # Atur izin agar grup (www-data) bisa menulis
-chmod -R 775 \
+chmod -R 777 \
     /var/www/app/storage \
     /var/www/app/bootstrap/cache \
     /var/www/app/database
