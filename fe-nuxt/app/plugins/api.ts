@@ -8,7 +8,7 @@ export default defineNuxtPlugin(() => {
       ? config.serverBaseUrl
       : config.public.clientBaseUrl;
 
-  const api: AxiosInstance = axios.create({
+  const axiosInstance: AxiosInstance = axios.create({
     baseURL,
     withCredentials: true,
     headers: {
@@ -16,9 +16,18 @@ export default defineNuxtPlugin(() => {
     },
   });
 
+  const fetchInstance = $fetch.create({
+    baseURL,
+    credentials: "include",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest",
+    },
+  });
+
   return {
     provide: {
-      axios: api,
+      axios: axiosInstance,
+      apiFetch: fetchInstance,
     },
   };
 });

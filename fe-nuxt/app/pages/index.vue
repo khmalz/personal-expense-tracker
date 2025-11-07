@@ -81,9 +81,9 @@
 </template>
 
 <script setup lang="ts">
-import { isAxiosError } from 'axios';
+import { FetchError } from 'ofetch';
 
-const { $axios } = useNuxtApp();
+const { $apiFetch } = useNuxtApp();
 const store = useExpense();
 const { setExpenses, setExpensesRaw, setError } = store;
 
@@ -103,51 +103,61 @@ const { pending, error } = await useAsyncData<Expense[]>(
    'fetch-expenses',
    async () => {
       try {
-         const { data } = await $axios.get<ExpenseApiResponse>('/api/expenses');
+         const { data } = await $apiFetch<ExpenseApiResponse>('/api/expenses');
 
-         setExpenses(data.data);
-         setExpensesRaw(data.data);
+         setExpenses(data);
+         setExpensesRaw(data);
          setError(null);
 
-         return data.data;
+         return data;
       } catch (e) {
          let errorMessage = 'Gagal memuat data dari server.';
          let statusCode = 500;
 
-         if (isAxiosError(e)) {
-            if (e.response) {
-               statusCode = e.response.status;
-               errorMessage =
-                  ERROR_MESSAGES[statusCode] || `Terjadi error: ${statusCode}.`;
+         if (e instanceof FetchError) {
+            statusCode = e.statusCode || 500;
+            const responseData = e.data;
 
-               console.error(
-                  `[AXIOS RESPONSE ERROR] Status ${statusCode}:`,
-                  e.response.data,
-               );
-            } else if (e.request) {
-               statusCode = 503;
-               errorMessage =
-                  'Tidak dapat terhubung ke server. Pastikan API berjalan.';
-               console.error(
-                  '[AXIOS REQUEST ERROR] Connection Error:',
-                  e.message,
-               );
-            } else {
-               errorMessage = `Error: ${e.message}`;
-               console.error('[AXIOS SETUP ERROR]:', e.message);
+            switch (statusCode) {
+               case 422:
+                  if (responseData?.errors) {
+                     const validationErrors = responseData.errors;
+                     errorMessage = Object.values(validationErrors).flat().join('\n');
+                     console.error(`[FETCH ERROR 422]:`, errorMessage);
+                  } else {
+                     errorMessage = ERROR_MESSAGES[statusCode] || e.message;
+                  }
+                  break;
+
+               case 503:
+                  errorMessage = 'Tidak dapat terhubung ke server.';
+                  console.error('[FETCH ERROR] Connection Error:', e.message);
+                  break;
+
+               case 404:
+               case 500:
+                  errorMessage = ERROR_MESSAGES[statusCode] || e.message;
+                  console.error(`[FETCH ERROR ${statusCode}]:`, e.message);
+                  break;
+
+               default:
+                  errorMessage = ERROR_MESSAGES[statusCode] || responseData?.message || e.message;
+                  console.error(`[FETCH ERROR ${statusCode}]:`, e.message);
+                  break;
             }
+
          } else if (e instanceof Error) {
             errorMessage = e.message;
-            console.error('[NON-AXIOS ERROR]:', e);
+            console.error('[NON-FETCH ERROR]:', e);
          }
 
          setError(errorMessage);
-
          return [];
       }
    },
    {
       server: true,
+      lazy: true
    },
 );
 
@@ -155,19 +165,21 @@ const handleDeleteExpense = async (id: number) => {
    if (!confirm('Are you sure you want to delete this expense?')) return;
 
    try {
-      await $axios.delete(`/api/expenses/${id}`);
+      await $apiFetch(`/api/expenses/${id}`, {
+         method: 'DELETE',
+      });
 
       console.log('Expense deleted successfully');
 
       await refreshNuxtData('fetch-expenses');
       await navigateTo('/');
+
    } catch (err) {
       console.error('Error deleting expense:', err);
 
-      if (isAxiosError<ValidationResponseData>(err)) {
-         if (err.response?.status === 422 && err.response.data.errors) {
-
-            const validationErrors = err.response.data.errors;
+      if (err instanceof FetchError) {
+         if (err.statusCode === 422 && err.data?.errors) {
+            const validationErrors = err.data.errors;
             const errorMessages = Object.values(validationErrors)
                .flat()
                .join('\n');
@@ -176,7 +188,7 @@ const handleDeleteExpense = async (id: number) => {
             alert(`Validation failed:\n${errorMessages}`);
 
          } else {
-            const serverError = err.response?.data?.message || err.message || 'Gagal menghapus data.';
+            const serverError = err.data?.message || err.message || 'Gagal menghapus data.';
             setError(serverError);
             alert(serverError);
          }

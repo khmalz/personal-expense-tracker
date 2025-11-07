@@ -19,8 +19,9 @@
 </template>
 
 <script setup lang="ts">
-import { isAxiosError } from 'axios';
-const { $axios } = useNuxtApp();
+import { FetchError } from 'ofetch';
+const { $apiFetch } = useNuxtApp();
+
 const route = useRoute();
 const id = route.params.id as string;
 
@@ -30,21 +31,22 @@ const {
    error
 } = await useAsyncData(
    `fetch-expense-${id}`,
-
    async () => {
       try {
-         const response = await $axios.get<{ data: Expense }>(
+         const response = await $apiFetch<{ data: Expense }>(
             `/api/expenses/${id}`,
          );
-         return response.data.data;
+         return response.data;
 
       } catch (err) {
-         if (isAxiosError(err) && err.response?.status === 404) {
-            throw createError({
-               statusCode: 404,
-               statusMessage: 'Expense not found!',
-               fatal: true
-            });
+         if (err instanceof FetchError) {
+            if (err.statusCode === 404) {
+               throw createError({
+                  statusCode: 404,
+                  statusMessage: 'Expense not found!',
+                  fatal: true
+               });
+            }
          }
 
          console.error('Failed to fetch expense:', err);
@@ -67,22 +69,26 @@ const handleEditExpense = async (data: ExpenseFormData) => {
    isSubmitting.value = true
 
    try {
-      await $axios.put(`/api/expenses/${id}`, data);
+      await $apiFetch(`/api/expenses/${id}`, {
+         method: 'PUT',
+         body: data
+      });
 
       console.log('Expense updated successfully');
       await navigateTo('/');
    } catch (err) {
       console.error('Error updating expense:', err);
 
-      if (isAxiosError<ValidationResponseData>(err)) {
-         if (err.response?.status === 422 && err.response.data.errors) {
-            const validationErrors = err.response.data.errors;
+      if (err instanceof FetchError) {
+         if (err.statusCode === 422 && err.data?.errors) {
+            const validationErrors = err.data.errors;
             const errorMessages = Object.values(validationErrors)
                .flat()
                .join('\n');
             console.error(`Validation failed:\n${errorMessages}`);
          } else {
-            console.error('An error occurred. Please try again.');
+            const serverError = err.data?.message || err.message || 'Gagal Memperbarui Data.';
+            console.error(serverError);
          }
       } else {
          console.error('An unexpected error occurred.');

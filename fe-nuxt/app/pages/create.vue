@@ -9,8 +9,8 @@
 </template>
 
 <script setup lang="ts">
-import { isAxiosError } from 'axios';
-const { $axios } = useNuxtApp();
+import { FetchError } from 'ofetch';
+const { $apiFetch } = useNuxtApp();
 
 const isSubmitting = ref(false)
 
@@ -19,22 +19,26 @@ const handleAddExpense = async (data: ExpenseFormData) => {
    isSubmitting.value = true
 
    try {
-      await $axios.post('/api/expenses', data);
+      await $apiFetch('/api/expenses', {
+         method: 'POST',
+         body: data
+      });
 
       console.log('Expense added successfully');
       await navigateTo('/');
    } catch (err) {
       console.error('Error adding expense:', err);
 
-      if (isAxiosError<ValidationResponseData>(err)) {
-         if (err.response?.status === 422 && err.response.data.errors) {
-            const validationErrors = err.response.data.errors;
+      if (err instanceof FetchError) {
+         if (err.response?.status === 422 && err.data?.errors) {
+            const validationErrors = err.data.errors;
             const errorMessages = Object.values(validationErrors)
                .flat()
                .join('\n');
             console.error(`Validation failed:\n${errorMessages}`);
          } else {
-            console.error('An error occurred. Please try again.');
+            const serverError = err.data?.message || err.message || 'Gagal Menambahkan Data.';
+            console.error(serverError);
          }
       } else {
          console.error('An unexpected error occurred.');
